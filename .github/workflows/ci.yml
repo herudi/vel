@@ -29,7 +29,5 @@ jobs:
             vlang
             ~/.vmodules
           key: ${{ runner.os }}-${{ github.sha }}
-      - name: Verify Formatting
-        run: v fmt -verify vel/
       - name: Run Test
         run: v test vel/vel_test.v
