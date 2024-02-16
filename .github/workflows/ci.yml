@@ -6,20 +6,30 @@ on:
   pull_request:
     branches: [master]
 
+env:
+  MOD_PATH: $HOME/.vmodules/vel
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Repo
-        uses: actions/checkout@v3
-
       - name: Setup V
         uses: vlang/setup-v@v1.3
         with:
           check-latest: true
-
-      - name: Verify formatting
-        run: v fmt -verify .
-
+      - uses: actions/checkout@v4
+        with:
+          path: vel
+      - name: Setup vel mod
+        run: mv vel ${{ env.MOD_PATH }}
+      - name: Cache
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            vlang
+            ~/.vmodules
+          key: ${{ runner.os }}-${{ github.sha }}
+      - name: Verify Formatting
+        run: v fmt -verify vel/
       - name: Run Test
-        run: v test vel_test.v
+        run: v test vel/vel_test.v
