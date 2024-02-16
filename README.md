@@ -2,7 +2,7 @@
 
 Declarative html-element in V.
 
-> Vel just a tiny program about (~80 lines of code).
+> Vel just a tiny program about (~100 lines of code).
 
 ## Install
 ```bash
@@ -32,66 +32,43 @@ fn main() {
 ```
 **Elem**, just a struct for simple declarative html elements. `Elem{tag, attr, child}`.
 
+## Using Html Markup
 ```v
-// Elem sources in vel.
+import herudi.vel { Elem, Html }
 
-type Child = []Child | string | int | bool | Elem
-type Value = string | bool | map[string]string
-
-@[params]
-struct Elem {
-	tag   string
-  attr  map[string]Value
-  child []Child
+html := Html{
+  head: [
+    Elem{'title', {}, ['home page title']},
+  ]
+  body: [
+    Elem{'h1', {}, ['Home Page']},
+  ]
 }
+println(html.to_string())
 ```
 
-## Custom Element 
+## Custom Component
 ```v
-struct Html {
-	head []Child
-	body []Child
-}
+import herudi.vel { Elem, Html }
 
-// render to html markup
-fn to_html(h Html) string {
-  return '<!DOCTYPE html>' + (
-		Elem{'html', { 'lang': 'en' }, [
-			Elem{'head', {}, [
-				Elem{'meta', { 'charset': 'utf-8' }, []},
-				Elem{'meta', { 'name': 'viewport', 'content': 'width=device-width, initial-scale=1.0' }, []},
-				h.head,
-			]},
-			Elem{'body', {}, h.body},
-		]}
-	).to_string()
-}
-
-// custum layout element/component
+// this is layout
 fn my_layout(elem Elem) Elem {
-	return (
-		Elem{'div', {'id': 'my_layout'}, [
-			Elem{'h1', {}, ['Title From Layout']},
-			elem.child,
-		]}
-	)
+	return Elem{'div', {}, [
+		Elem{'h1', {}, ['This is layout']},
+		elem.child,
+	]}
 }
 
-fn main() {
-	html := to_html(
-		head: [
-			Elem{'title', {}, ['hello vel title']},
-		]
-		body: [
-			my_layout(
-				child: [
-					Elem{'p', {}, ['this is content']},
-				]
-			),
-		]
-	)
-	println(html)
+elem := Elem{
+  child: [
+    my_layout(
+      child: [
+        Elem{'p', {}, ['This is content']},
+      ]
+    ),
+  ]
 }
+println(elem.to_string())
 ```
 
 ## Fragment
@@ -106,6 +83,30 @@ elem := Elem{
 println(elem.to_string())
 
 // <h1>foo</h1><h2>bar</h2>
+```
+
+## Handle Array
+```v
+import herudi.vel { Child, Elem }
+
+struct Person {
+	name string
+	age  int
+}
+
+persons := [Person{'john', 20}, Person{'yanto', 50}]
+
+elem := Elem{
+  child: [
+    persons.map(fn (person Person) Child {
+      return Elem{'div', {}, [
+        Elem{'h1', {}, ['Name : ${person.name}']},
+        Elem{'h1', {}, ['Age  : ${person.age}']},
+      ]}
+    }),
+  ]
+}
+println(elem.to_string())
 ```
 ## License
 
