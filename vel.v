@@ -13,6 +13,16 @@ pub mut:
 	child []Child
 }
 
+@[params]
+pub struct Html {
+pub mut:
+	head      []Child
+	body      []Child
+	footer    []Child
+	html_attr map[string]Value
+	body_attr map[string]Value
+}
+
 const unsafe_flag = '#__UNSAFE_VEL__#'
 const void_tag = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param',
 	'source', 'track', 'wbr']
@@ -31,8 +41,10 @@ fn to_attr(data map[string]Value) string {
 			attr += ' ${k.to_lower()}="${escape_html(v)}"'
 		} else if v is map[string]string {
 			attr += ' ${k.to_lower()}="${to_style(v)}"'
-		} else {
-			attr += ' ${k.to_lower()}'
+		} else if v is bool {
+			if v == true {
+				attr += ' ${k.to_lower()}'
+			}
 		}
 	}
 	return attr
@@ -74,6 +86,17 @@ fn to_string(elem Child) string {
 
 pub fn (e Elem) to_string() string {
 	return to_string(e)
+}
+
+pub fn (h Html) to_string() string {
+	mut html_attr := h.html_attr.clone()
+	if 'lang' !in html_attr {
+		html_attr['lang'] = 'en'
+	}
+	return '<!DOCTYPE html>' + '<html${to_attr(html_attr)}>' + '<head><meta charset="utf-8">' +
+		'<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+		'${to_string(h.head)}</head>' +
+		'<body${to_attr(h.body_attr)}>${to_string(h.body)}${to_string(h.footer)}</body>' + '</html>'
 }
 
 pub fn unsafe_html(str string) Child {
